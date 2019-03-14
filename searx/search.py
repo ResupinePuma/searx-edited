@@ -73,18 +73,21 @@ def search_one_request(engine, query, request_params):
     engine.request(query, request_params)
 
     # ignoring empty urls
-    if request_params['url'] is None:
-        return []
+    if 'isLibrary' in request_params:
+        return engine.response(request_params['data'])
+    else:
+        if request_params['url'] is None:
+            return []
 
-    if not request_params['url']:
-        return []
-
-    # send request
-    response = send_http_request(engine, request_params)
-
+        if not request_params['url']:
+            return []
+        # send request
+        response = send_http_request(engine, request_params)
+        
     # parse the response
     response.search_params = request_params
     return engine.response(response)
+
 
 
 def search_one_request_safe(engine_name, query, request_params, result_container, start_time, timeout_limit):
