@@ -15,7 +15,7 @@ RUN adduser -D -h /usr/local/searx -s /bin/sh searx searx \
  && echo 'if [ -n "$HTTP_PROXY_URL" ] || [ -n "$HTTPS_PROXY_URL" ]; then' >> run.sh \
  && echo '  sed -i "s~^#    proxies :~    proxies:\\n      http: ${HTTP_PROXY_URL}\\n      https: ${HTTPS_PROXY_URL}\\n~" searx/settings.yml' >> run.sh \
  && echo 'fi' >> run.sh \
- && echo 'python searx/webapp.py' >> run.sh \
+ && echo 'python3 searx/webapp.py' >> run.sh \
  && chmod +x run.sh
 
 COPY requirements.txt ./requirements.txt
@@ -23,8 +23,8 @@ COPY requirements.txt ./requirements.txt
 RUN echo "@commuedge http://nl.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
  && apk -U add \
     build-base \
-    python \
-    python-dev \
+    python3 \
+    python3-dev \
     py-pip \
     libxml2 \
     libxml2-dev \
@@ -39,7 +39,7 @@ RUN echo "@commuedge http://nl.alpinelinux.org/alpine/edge/community" >> /etc/ap
  && pip install --no-cache -r requirements.txt \
  && apk del \
     build-base \
-    python-dev \
+    python3-dev \
     libffi-dev \
     openssl-dev \
     libxslt-dev \
