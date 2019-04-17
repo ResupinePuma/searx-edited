@@ -478,6 +478,13 @@ def index():
     if output_format not in ['html', 'csv', 'json', 'rss']:
         output_format = 'html'
 
+    res = None
+    final_res = None
+    if request.form.get('n') is not None:
+        final_res = json.loads(request.form.get('n'))
+        #final_res=json.loads(res)
+        print(final_res)
+
     # check if there is query
     if request.form.get('q') is None:
         if output_format == 'html':
@@ -486,13 +493,6 @@ def index():
             )
         else:
             return index_error(output_format, 'No query'), 400
-
-    res = None
-    final_res = None
-    if request.form.get('n') is not None:
-        res = json.loads(request.form.get('n'))
-        final_res=json.loads(res)
-        #print(res)
 
     # search
     search_query = None
@@ -555,20 +555,18 @@ def index():
 
     if output_format == 'json':
         #print(results[0]['pretty_url'])
-        if final_res is not None:
+        temp = []
+        if final_res is not None:          
             for x in results:
-                We_are_happy = False
-                for y in final_res:
-                    if x == y:
-                        We_are_happy=True
-                        break
-                if not We_are_happy:
-                    results.remove(x)
+                if x['url'] in final_res:
+                    temp.append(x)
+                else:
+                    continue
+            results = temp
         else:
-            pass
-            
+            pass           
 
-        Otvet = Response(json.dumps({'query': search_query.query.decode('utf-8'),
+        return Response(json.dumps({'query': search_query.query.decode('utf-8'),
                                     'number_of_results': number_of_results,
                                     'results': results,
                                     'answers': list(result_container.answers),
@@ -579,9 +577,18 @@ def index():
                                    default=lambda item: list(item) if isinstance(item, set) else item),
                         mimetype='application/json')
 
-
-        return Otvet
     elif output_format == 'csv':
+        temp = []
+        if final_res is not None:          
+            for x in results:
+                if x['url'] in final_res:
+                    temp.append(x)
+                else:
+                    continue
+            results = temp
+        else:
+            pass          
+
         csv = UnicodeWriter(StringIO())
         keys = ('title', 'url', 'content', 'host', 'engine', 'score')
         csv.writerow(keys)
@@ -594,6 +601,17 @@ def index():
         response.headers.add('Content-Disposition', cont_disp)
         return response
     elif output_format == 'rss':
+        temp = []
+        if final_res is not None:          
+            for x in results:
+                if x['url'] in final_res:
+                    temp.append(x)
+                else:
+                    continue
+            results = temp
+        else:
+            pass          
+            
         response_rss = render(
             'opensearch_response_rss.xml',
             results=results,
