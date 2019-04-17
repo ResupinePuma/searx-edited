@@ -487,6 +487,13 @@ def index():
         else:
             return index_error(output_format, 'No query'), 400
 
+    res = None
+    final_res = None
+    if request.form.get('n') is not None:
+        res = json.loads(request.form.get('n'))
+        final_res=json.loads(res)
+        #print(res)
+
     # search
     search_query = None
     result_container = None
@@ -547,7 +554,21 @@ def index():
                     result['publishedDate'] = format_date(result['publishedDate'])
 
     if output_format == 'json':
-        return Response(json.dumps({'query': search_query.query.decode('utf-8'),
+        #print(results[0]['pretty_url'])
+        if final_res is not None:
+            for x in results:
+                We_are_happy = False
+                for y in final_res:
+                    if x == y:
+                        We_are_happy=True
+                        break
+                if not We_are_happy:
+                    results.remove(x)
+        else:
+            pass
+            
+
+        Otvet = Response(json.dumps({'query': search_query.query.decode('utf-8'),
                                     'number_of_results': number_of_results,
                                     'results': results,
                                     'answers': list(result_container.answers),
@@ -557,6 +578,9 @@ def index():
                                     'unresponsive_engines': list(result_container.unresponsive_engines)},
                                    default=lambda item: list(item) if isinstance(item, set) else item),
                         mimetype='application/json')
+
+
+        return Otvet
     elif output_format == 'csv':
         csv = UnicodeWriter(StringIO())
         keys = ('title', 'url', 'content', 'host', 'engine', 'score')
