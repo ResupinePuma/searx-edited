@@ -480,11 +480,11 @@ def index():
 
     res = None
     final_res = None
-    if request.form.get('n') is not None:
+    if request.form.get('n') is not None and not request.form.get('n') == "":
         final_res = json.loads(request.form.get('n'))
         #final_res=json.loads(res)
         print(final_res)
-
+        
     # check if there is query
     if request.form.get('q') is None:
         if output_format == 'html':
