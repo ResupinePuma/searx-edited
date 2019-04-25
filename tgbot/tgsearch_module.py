@@ -1,11 +1,13 @@
 #Остановился на проблеме поиска последнего поста и проверки, есть ли содержимое на странице#
 # Реализовано: работа через мой прокси (если в бане, ввод с клавиатуры), взятие списка каналов по ссылке с каталога),
-#вытаскивание названия, преобразовывание в t.me/, решаю проблему поиска максимального поста
+#вытаскивание названия, преобразовывание в t.me/, экспорт в .csv
 
 import requests
 import socks    # для прокси
 import socket   # для прокси
+import csv
 from bs4 import BeautifulSoup  # парсер
+
 
 def get_html(url):
     response = requests.get(url)
@@ -18,7 +20,7 @@ def get_text(string):  # получаем текст поста (аргумен�
     return s
 
 
-def get_text_from_post(url):
+def get_text_from_post(url): # основная подпрограмма получения текста их поста, выше -- его подпрограмма
     html = get_html(url)
     soup = BeautifulSoup(html, 'lxml')
     content_text = soup.find_all('meta')
@@ -38,18 +40,23 @@ def get_channel_links(url): # получаю ссылки на каналы те
         print(strNew)
     return links
 
+# надо поработать над рекурсией (как сделать моментальную передачу значения и выход из рекурсии? #
 def search_last(channel, number, delta, channel_description):    # сам алгоритм поиска последнего поста
     delta = delta // 2
-    if delta < 10:
-        while get_text_from_post(channel+str(number)) != channel_description
-            new_number
-        return number
-    elif get_text_from_post(channel+str(number))== channel_description:
+    a = 0
+    if (delta < 10) and (get_text_from_post(channel+str(number)) != channel_description):
+        new_number=number+1
+        return search_last(channel, new_number, delta, channel_description)
+
+    elif (delta < 10) and (get_text_from_post(channel + str(number)) == channel_description):
+        return (number-1)
+
+    elif (delta>10) and (get_text_from_post(channel+str(number))== channel_description):
         new_number = number - delta
-        search_last(channel, new_number, delta, channel_description)
-    else:    # указывает на то, что пост есть
+        return search_last(channel, new_number, delta, channel_description)
+    elif (delta >10) and (get_text_from_post(channel+str(number))!= channel_description):    # указывает на то, что пост есть
         new_number=number+delta
-        search_last(channel, new_number, delta, channel_description)
+        return search_last(channel, new_number, delta, channel_description)
 
 
 
@@ -59,6 +66,11 @@ def define_last_post(channel):   # определяем последний по�
     last = search_last(channel, max, max, channel_description)
     return last
 
+
+def write_csv(content): #пишем в .csv
+    with open('tgcontent.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow([content])
 
 def start_proxy(addr, port, username, password):
     socks.set_default_proxy(socks.HTTP, addr=addr, port=port, username=username, password=password)
@@ -83,13 +95,22 @@ def main():
 
     for channel in channels:
         if channel!='https://t.me//':
-          try:
-              get_html(channel)   #проверяю, все ли в порядке с каналом, иначе переход к следующему
-              print('Захожу на: '+channel + ' и начинаю перебирать посты с начала с шагом 10...')
-              define_last_post(channel)
+            try:
+                get_html(channel)   #проверяю, все ли в порядке с каналом, иначе переход к следующему
+                #print('Захожу на: '+channel + ' и начинаю искать последний пост...')
+                #define_last_post(channel) #поиск последнего поста
+                print('Начинаю выгружать посты с канала '+channel+ ' в .csv, пока они есть')
+                number = 80
+                a = get_text_from_post(channel+str(number))
+                b = get_text_from_post(channel)
+                while (get_text_from_post(channel+str(number)) != (get_text_from_post(channel))): # сравниваю содержимое главное и постов
+                    content = get_text_from_post(channel+str(number))
+                    url = channel+str(number)
+                    write_csv(content)
+                    number=number+1
 
-          except:
-              print('Ошибка при получении канала! Перехожу к следующему')
+            except:
+                print('Ошибка при получении канала! Перехожу к следующему')
 
 
 
