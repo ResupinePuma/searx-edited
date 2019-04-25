@@ -478,6 +478,15 @@ def index():
     if output_format not in ['html', 'csv', 'json', 'rss']:
         output_format = 'html'
 
+    res = None
+    final_res = None
+    if request.form.get('n') is not None:
+        final_res = json.loads(request.form.get('n'))
+        #final_res=json.loads(res)
+        if(final_res==[]):
+            final_res=None
+        print(final_res)
+        
     # check if there is query
     if request.form.get('q') is None:
         if output_format == 'html':
@@ -547,6 +556,18 @@ def index():
                     result['publishedDate'] = format_date(result['publishedDate'])
 
     if output_format == 'json':
+        #print(results[0]['pretty_url'])
+        temp = []
+        if final_res is not None:          
+            for x in results:
+                if x['url'] in final_res:
+                    temp.append(x)
+                else:
+                    continue
+            results = temp
+        else:
+            pass           
+
         return Response(json.dumps({'query': search_query.query.decode('utf-8'),
                                     'number_of_results': number_of_results,
                                     'results': results,
@@ -557,7 +578,19 @@ def index():
                                     'unresponsive_engines': list(result_container.unresponsive_engines)},
                                    default=lambda item: list(item) if isinstance(item, set) else item),
                         mimetype='application/json')
+
     elif output_format == 'csv':
+        temp = []
+        if final_res is not None:          
+            for x in results:
+                if x['url'] in final_res:
+                    temp.append(x)
+                else:
+                    continue
+            results = temp
+        else:
+            pass          
+
         csv = UnicodeWriter(StringIO())
         keys = ('title', 'url', 'content', 'host', 'engine', 'score')
         csv.writerow(keys)
@@ -570,6 +603,17 @@ def index():
         response.headers.add('Content-Disposition', cont_disp)
         return response
     elif output_format == 'rss':
+        temp = []
+        if final_res is not None:          
+            for x in results:
+                if x['url'] in final_res:
+                    temp.append(x)
+                else:
+                    continue
+            results = temp
+        else:
+            pass          
+            
         response_rss = render(
             'opensearch_response_rss.xml',
             results=results,
