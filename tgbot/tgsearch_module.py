@@ -1,7 +1,3 @@
-#Остановился на проблеме поиска последнего поста и проверки, есть ли содержимое на странице#
-# Реализовано: работа через мой прокси (если в бане, ввод с клавиатуры), взятие списка каналов по ссылке с каталога),
-#вытаскивание названия, преобразовывание в t.me/, экспорт в .csv
-
 import requests
 import socks    # для прокси
 import socket   # для прокси
@@ -13,19 +9,20 @@ def get_html(url):
     response = requests.get(url)
     return response.text
 
-
-def get_text(string):  # получаем текст поста (аргумент -- строка с мета из ассива content_text[5])
-    s = string.replace('<meta content="','')
-    s = s.replace('" property="og:description"/>', '')
-    return s
-
-
-def get_text_from_post(url): # основная подпрограмма получения текста их поста, выше -- его подпрограмма
-    html = get_html(url)
+def get_content_from_post(url): # получаю из поста: автора, текст, дату
+    html = get_html(url+'?embed=1') #?embed=1 -- позволяет открыть адекватный кода страницы в html для парсинга
     soup = BeautifulSoup(html, 'lxml')
-    content_text = soup.find_all('meta')
-    t = get_text(str(content_text[5]))
-    return t
+    if(soup.find('div', class_='tgme_widget_message_error')== None and soup.find('div', class_='message_media_not_supported_label')== None): #пока не появляется класс ошибки, выполняется тело, иначе возвращает 0
+
+        channel = soup.find('div', class_='tgme_widget_message_author').get_text()  # название канала
+        text = soup.find('div', class_='tgme_widget_message_text').get_text()  # текст поста
+        date = soup.find('time', class_='datetime').get_text()  # дата
+        content = [channel, text, date]
+        return content
+    elif(soup.find('div', class_='tgme_widget_message_error')!= None or soup.find('div', class_='message_media_not_supported_label')!= None):
+        return 1 #нужно перейти к следующему
+    else:
+        return 0
 
 def get_channel_links(url): # получаю ссылки на каналы телеграм, сразу с t.me/
     html = get_html(url)
@@ -40,37 +37,11 @@ def get_channel_links(url): # получаю ссылки на каналы те
         print(strNew)
     return links
 
-# надо поработать над рекурсией (как сделать моментальную передачу значения и выход из рекурсии? #
-def search_last(channel, number, delta, channel_description):    # сам алгоритм поиска последнего поста
-    delta = delta // 2
-    a = 0
-    if (delta < 10) and (get_text_from_post(channel+str(number)) != channel_description):
-        new_number=number+1
-        return search_last(channel, new_number, delta, channel_description)
-
-    elif (delta < 10) and (get_text_from_post(channel + str(number)) == channel_description):
-        return (number-1)
-
-    elif (delta>10) and (get_text_from_post(channel+str(number))== channel_description):
-        new_number = number - delta
-        return search_last(channel, new_number, delta, channel_description)
-    elif (delta >10) and (get_text_from_post(channel+str(number))!= channel_description):    # указывает на то, что пост есть
-        new_number=number+delta
-        return search_last(channel, new_number, delta, channel_description)
-
-
-
-def define_last_post(channel):   # определяем последний пост
-    channel_description = get_text_from_post(channel)   # описание канала
-    max = 20000
-    last = search_last(channel, max, max, channel_description)
-    return last
-
 
 def write_csv(content): #пишем в .csv
-    with open('tgcontent.csv', 'a') as f:
+    with open('tgcontent.csv', 'a', newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([content])
+        writer.writerow(content)
 
 def start_proxy(addr, port, username, password):
     socks.set_default_proxy(socks.HTTP, addr=addr, port=port, username=username, password=password)
@@ -86,6 +57,10 @@ def start_proxy(addr, port, username, password):
 
 
 def main():
+    #addr
+    #port
+    #username
+    #password
 
     url = 'https://tlgrm.ru/channels/news' #каталог новостных каналов Телеграм
 
@@ -96,21 +71,18 @@ def main():
     for channel in channels:
         if channel!='https://t.me//':
             try:
-                get_html(channel)   #проверяю, все ли в порядке с каналом, иначе переход к следующему
-                #print('Захожу на: '+channel + ' и начинаю искать последний пост...')
-                #define_last_post(channel) #поиск последнего поста
                 print('Начинаю выгружать посты с канала '+channel+ ' в .csv, пока они есть')
-                number = 80
-                a = get_text_from_post(channel+str(number))
-                b = get_text_from_post(channel)
-                while (get_text_from_post(channel+str(number)) != (get_text_from_post(channel))): # сравниваю содержимое главное и постов
-                    content = get_text_from_post(channel+str(number))
-                    url = channel+str(number)
-                    write_csv(content)
-                    number=number+1
+                number = 1
+                content = get_content_from_post(channel + str(number))
+                while (content!=0): #пока не появляется класса ошибки, пишем посты, иначе не пишем и переходим к +1 посту
+                    if (content != 1):
+                        write_csv(content) #пишется сразу массив по строкам: канал+текст+дата
+                        print(str(content[0]) + ' ' + str(content[1]) + ' ' + str(content[2]))
+                    number = number+1
+                    content = get_content_from_post(channel+str(number))
 
             except:
-                print('Ошибка при получении канала! Перехожу к следующему')
+                print('Ошибка при получении поста! Перехожу к следующему каналу')
 
 
 
