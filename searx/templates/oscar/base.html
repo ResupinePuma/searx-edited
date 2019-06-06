@@ -18,10 +18,13 @@
     {% else %}
         <link rel="stylesheet" href="{{ url_for('static', filename='css/logicodev.min.css') }}" type="text/css" />
     {% endif %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.min.css') }}" type="text/css" />
-    {% for css in styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.min.css') }}" type="text/css" />    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.multiselect.css') }}" type="text/css" />  
+    {% for css in styles %}  
         <link rel="stylesheet" href="{{ url_for('static', filename=css) }}" type="text/css" />
     {% endfor %}
+    <script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.multiselect.min.js') }}"></script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -96,8 +99,7 @@
                 </small>
             </p>
         </div>
-    </div>
-    <script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+    </div>    
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     {% if autocomplete %}<script src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>{% endif %}
     <script src="{{ url_for('static', filename='js/require-2.1.15.min.js') }}"></script>

@@ -1,0 +1,61 @@
+<input type="hidden" name="news_category" value="All" />
+
+<select style="height: 1px; width: 1px;opacity: 0;" type="hidden" multiple id="news_category">
+        <option value="N2">N2</option>
+        <option value="N3">N3</option>
+        {% for n_cat in news_categories %}
+        <option value="n_cat">n_cat</option>
+        {% endfor %}
+</select>
+<script type="text/javascript">
+        
+        $('#news_category').multiselect({
+            placeholder: 'Select news categories',
+            selectAll: true,
+            onLoad(element){
+                var stored = localStorage['news_category'];
+                if (stored !== "undefined"){
+                    var tmp =[];
+                    $.each(element, function(e) {
+                        if ($.inArray(element[e].value, stored)){
+                            var temp = {
+                                name   : element[e].value,
+                                value  : element[e].value,
+                                checked: true
+                            }
+                            tmp.push(temp);
+                            console.log(element[e].value)
+                            console.log(element[e].selected)
+                        } 
+                    });
+                    $('#news_category').multiselect( 'loadOptions', tmp); 
+                }
+            },
+            onControlClose(element){
+                var res = []; var text;
+                for (var i = 0; i < element.length; i++) {
+                    if (element[i].selected == true){
+                        res.push(element[i].value);
+                    }           
+                }                
+                $("#search_form").each(function () {
+                var inp = $(this).find(':input');
+                for (var i = 0; i < inp.length; i++) {
+                        if (inp[i].name == "news_category"){
+                            inp[i].value = JSON.stringify(res);
+                            text = inp[i].value;
+                        }           
+                    }
+                });
+                if (res.length != 0){                    
+                    $('#news_category').attr('disabled', 'disabled');
+                    $('#search_form').submit();
+                }
+                else {
+                    localStorage['news_category'] = 'undefined';
+                }
+            }            
+        });
+    </script>
+
+

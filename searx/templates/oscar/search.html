@@ -20,5 +20,12 @@
     <div class="col-sm-12">
         {% include 'oscar/categories.html' %}
     </div>
+    <div class="col-sm-12">
+        {% if selected_categories == ['news'] %}
+				<div style="padding-bottom: 10px; position: relative">
+            {% include 'oscar/news_cats.html' %}
+				</div>
+				{% endif %}
+    </div>
   </div>
 </form><!-- / #search_form_full -->

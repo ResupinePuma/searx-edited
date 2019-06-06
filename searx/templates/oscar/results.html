@@ -1,6 +1,7 @@
 {% extends "oscar/base.html" %}
 {% macro search_form_attrs(pageno) -%}
-    {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1"/>{% endfor %}
+	{% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1"/> 
+{% endfor %}
 	<input type="hidden" name="n" value="" />
     <input type="hidden" name="q" value="{{ q|e }}" />
     <input type="hidden" name="pageno" value="{{ pageno }}" />

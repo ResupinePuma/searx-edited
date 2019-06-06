@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 searx is free software: you can redistribute it and/or modify
@@ -478,14 +478,6 @@ def index():
     if output_format not in ['html', 'csv', 'json', 'rss']:
         output_format = 'html'
 
-    res = None
-    final_res = None
-    if request.form.get('n') is not None:
-        final_res = json.loads(request.form.get('n'))
-        #final_res=json.loads(res)
-        if(final_res==[]):
-            final_res=None
-        print(final_res)
         
     # check if there is query
     if request.form.get('q') is None:
@@ -495,6 +487,27 @@ def index():
             )
         else:
             return index_error(output_format, 'No query'), 400
+
+    res = None
+    final_res = None
+    if request.form.get('n') is not '' and not None:
+        try:
+            final_res = json.loads(request.form.get('n'))
+            #final_res=json.loads(res)
+            if(final_res==[]):
+                final_res=None
+        except:
+            pass
+
+    n_cat = 'All'
+    if not request.form.get('news_category') is 'All':
+        try:
+            n_cat = json.loads(request.form.get('news_category'))
+            print(n_cat)
+        except:
+            pass
+
+    #TODO Make news category processing
 
     # search
     search_query = None
@@ -633,6 +646,7 @@ def index():
         time_range=search_query.time_range,
         number_of_results=format_decimal(number_of_results),
         advanced_search=advanced_search,
+        news_categories=n_cat,
         suggestions=result_container.suggestions,
         answers=result_container.answers,
         corrections=result_container.corrections,

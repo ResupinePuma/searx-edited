@@ -252,6 +252,9 @@ def get_search_query_from_webapp(preferences, form):
     # query_engines
     query_engines = raw_text_query.engines
 
+    # Extended_categories
+    ext_categories = []
+
     # query_categories
     query_categories = []
 
@@ -321,8 +324,10 @@ def get_search_query_from_webapp(preferences, form):
                                       'name': engine.name}
                                      for engine in categories[categ]
                                      if (engine.name, categ) not in disabled_engines)
+    if (query_categories == ['news']):
+        ext_categories = form.get('news_category')
 
-    return SearchQuery(query, query_engines, query_categories,
+    return SearchQuery(query, query_engines, query_categories, ext_categories,
                        query_lang, query_safesearch, query_pageno, query_time_range)
 
 
