@@ -500,12 +500,13 @@ def index():
             pass
 
     n_cat = 'All'
-    if not request.form.get('news_category') is 'All':
-        try:
-            n_cat = json.loads(request.form.get('news_category'))
-            print(n_cat)
-        except:
-            pass
+    if request.form.get('n') is not None:
+        if not request.form.get('news_category') is 'All':
+            try:
+                n_cat = json.loads(request.form.get('news_category'))
+                print(n_cat)
+            except:
+                pass
 
     #TODO Make news category processing
 
@@ -554,7 +555,7 @@ def index():
         if 'publishedDate' in result:
             try:  # test if publishedDate >= 1900 (datetime module bug)
                 result['pubdate'] = result['publishedDate'].strftime('%Y-%m-%d %H:%M:%S%z')
-            except ValueError:
+            except:
                 result['publishedDate'] = None
             else:
                 if result['publishedDate'].replace(tzinfo=None) >= datetime.now() - timedelta(days=1):

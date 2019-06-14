@@ -72,17 +72,17 @@ def search_one_request(engine, query, request_params):
     # search-engine (contained in engines folder)
     engine.request(query, request_params)
 
-    # ignoring empty urls
-    if 'isLibrary' in request_params:
-        return engine.response(request_params['data'])
-    else:
+    # ignoring empty urls   
+    if 'isLibrary' not in request_params:    
         if request_params['url'] is None:
             return []
 
         if not request_params['url']:
             return []
-        # send request
+            # send request    
         response = send_http_request(engine, request_params)
+    else:
+        response = request_params['data']
         
     # parse the response
     response.search_params = request_params
@@ -405,6 +405,9 @@ class Search(object):
             # 0 = None, 1 = Moderate, 2 = Strict
             request_params['safesearch'] = search_query.safesearch
             request_params['time_range'] = search_query.time_range
+            request_params['ex_cats'] = search_query.ext_categories
+
+            # News here
 
             # append request to list
             requests.append((selected_engine['name'], search_query.query, request_params))

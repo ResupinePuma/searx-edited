@@ -9,6 +9,7 @@ robot_output.xml
 robot_report.html
 test_basic/
 setup.cfg
+.vscode
 
 *.pyc
 */*.pyc

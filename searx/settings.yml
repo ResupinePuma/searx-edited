@@ -79,6 +79,7 @@ engines:
   - name : elasticsearch
     engine : elastic
     shortcut : es
+    timeout: 10.0
 
   - name : base
     engine : base
@@ -100,6 +101,7 @@ engines:
   - name : bing news
     engine : bing_news
     shortcut : bin
+    timeout: 10.0
 
   - name : bing videos
     engine : bing_videos
